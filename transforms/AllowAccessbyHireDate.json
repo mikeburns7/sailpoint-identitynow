@@ -1,0 +1,37 @@
+// a date comparte transform that outputs ALLOW or DENY based upon a given date and hiredate. 
+//use case: If a user should be given access to a resource based on hiredate. 
+//input: 10/17/2022
+//output: ALLOW
+
+{
+    "name": "AllowAccessbyHireDate",
+    "type": "dateCompare",
+    "attributes": {
+        "firstDate": {
+            "attributes": {
+                "input": {
+                    "attributes": {
+                        "sourceName": "Workday",
+                        "attributeName": "HIREDATE"
+                    },
+                    "type": "accountAttribute"
+                },
+                "inputFormat": "M/d/yyyy",
+                "outputFormat": "ISO8601"
+            },
+            "type": "dateFormat"
+        },
+        "secondDate": {
+            "attributes": {
+                "input": "10/18/2022",
+                "inputFormat": "M/d/yyyy",
+                "outputFormat": "ISO8601"
+            },
+            "type": "dateFormat"
+        },
+        "operator": "lte",
+        "positiveCondition": "ALLOW",
+        "negativeCondition": "DENY"
+    },
+    "internal": false
+}
