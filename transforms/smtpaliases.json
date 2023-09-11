@@ -1,0 +1,21 @@
+// a nested replace tranform that will, using regex, extract strings between 'smtp:' and '@' (including @) and then replace at-symbol with a semi-colon to output a deliminited list of smtp aliases
+
+//input: x500:/o=ExchangeLabs/ou=Exchange Administrative Group (xyz123)/cn=Recipients/cn=xyz123-Michael Burnsstmp:mike.burns@xzy123.comSMTP:michael.burns@xzy123.comstmp:miburns@xyz123.com
+//output: mike.burns;michael.burns;miburns
+
+{
+    "name": "smtpaliasv2",
+    "type": "replace",
+    "attributes": {
+        "input": {
+            "type": "replace",
+            "attributes": {
+                "regex": "^((?:(?!smtp:).)*smtp:)|smtp:|(?<=@)(.*?)(smtp:+?)|((?<=@).*)|^(?!smtp:).*",
+                "replacement": ""
+            }
+        },
+        "regex": "@",
+        "replacement": ";"
+    },
+    "internal": false
+}
