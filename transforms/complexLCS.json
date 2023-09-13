@@ -1,0 +1,225 @@
+// determines the status of an employee. The rule uses a series of conditions to check the values of various attributes, such as the employee's last seen date, file number, and LCS status. The following is a summary of the logic:
+
+// If the employee's file number is in the table of known file numbers, their status is "FOUND".
+// If the employee has never been seen on the Emp File, their status is "inactive".
+// If the employee's last seen date is within the past two weeks, their status is "suspended".
+// If the employee has a user ID and their old LCS status was "manualSuspension", their status is "manualSuspension".
+// If the employee has a user ID and their worker status is not "ACTIVE" and they have been inactive for more than 60 days, their status is "inactive".
+// If the employee has a user ID and their old LCS status was "manualSuspension" and they have been inactive for more than two weeks, their status is "suspended".
+// If the employee has a user ID and their worker status is "SUSPENDED", "DISABLED", or "INACTIVE", their status is "suspended".
+// If the employee has a user ID and their worker status is "ACTIVE", their status is "active".
+// If the employee does not have a user ID, their status is "newhire".
+// If none of the above conditions are met, the employee's status is "unmanaged".
+
+{
+    "name": "DetermineLCSv11",
+    "type": "static",
+    "attributes": {
+        "oldLCS": {
+            "attributes": {
+                "values": [
+                    {
+                        "attributes": {
+                            "value": "$oldValue"
+                        },
+                        "type": "static"
+                    },
+                    {
+                        "attributes": {
+                            "value": "none"
+                        },
+                        "type": "static"
+                    }
+                ]
+            },
+            "type": "firstValid"
+        },
+        "userid": {
+            "type": "firstValid",
+            "attributes": {
+                "values": [
+                    {
+                        "attributes": {
+                            "attributeName": "userid",
+                            "sourceName": "Emp File"
+                        },
+                        "type": "accountAttribute"
+                    },
+                    "NONE"
+                ]
+            }
+        },
+        "workerstatus": {
+            "type": "firstValid",
+            "attributes": {
+                "values": [
+                    {
+                        "attributes": {
+                            "attributeName": "worker_status",
+                            "sourceName": "Emp File"
+                        },
+                        "type": "accountAttribute"
+                    },
+                    "INACTIVE"
+                ]
+            }
+        },
+        "movetosuspended-2w": {
+            "type": "dateCompare",
+            "attributes": {
+                "firstDate": {
+                    "type": "firstValid",
+                    "attributes": {
+                        "values": [
+                            {
+                                "type": "identityAttribute",
+                                "attributes": {
+                                    "name": "suspendedDateDateType"
+                                }
+                            },
+                            {
+                                "type": "dateFormat",
+                                "attributes": {
+                                    "inputFormat": "yyyy-MM-dd'T'HH:mm",
+                                    "outputFormat": "ISO8601",
+                                    "input": {
+                                        "type": "dateMath",
+                                        "attributes": {
+                                            "expression": "now+10y"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "secondDate": {
+                    "type": "dateMath",
+                    "attributes": {
+                        "expression": "now-2w",
+                        "roundUp": false
+                    }
+                },
+                "operator": "lt",
+                "positiveCondition": "true",
+                "negativeCondition": "false"
+            }
+        },
+        "movetoinactive-60d": {
+            "type": "dateCompare",
+            "attributes": {
+                "firstDate": {
+                    "type": "firstValid",
+                    "attributes": {
+                        "values": [
+                            {
+                                "type": "identityAttribute",
+                                "attributes": {
+                                    "name": "suspendedDateDateType"
+                                }
+                            },
+                            {
+                                "type": "dateFormat",
+                                "attributes": {
+                                    "inputFormat": "yyyy-MM-dd'T'HH:mm",
+                                    "outputFormat": "ISO8601",
+                                    "input": {
+                                        "type": "dateMath",
+                                        "attributes": {
+                                            "expression": "now+10y"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "secondDate": {
+                    "type": "dateMath",
+                    "attributes": {
+                        "expression": "now-2m",
+                        "roundUp": false
+                    }
+                },
+                "operator": "lt",
+                "positiveCondition": "true",
+                "negativeCondition": "false"
+            }
+        },
+        "neverseenonempfile": {
+            "type": "identityAttribute",
+            "attributes": {
+                "name": "lastSeenOnEmpFileDatedateType"
+            }
+        },
+        "empFileLastSeen-2w": {
+            "type": "dateCompare",
+            "attributes": {
+                "firstDate": {
+                    "type": "firstValid",
+                    "attributes": {
+                        "values": [
+                            {
+                                "type": "dateFormat",
+                                "attributes": {
+                                    "input": {
+                                        "attributes": {
+                                            "sourceName": "Emp File",
+                                            "attributeName": "last_seen"
+                                        },
+                                        "type": "accountAttribute"
+                                    },
+                                    "inputFormat": "yyyy-MM-dd",
+                                    "outputFormat": "ISO8601"
+                                }
+                            },
+                            {
+                                "type": "dateFormat",
+                                "attributes": {
+                                    "inputFormat": "yyyy-MM-dd'T'HH:mm",
+                                    "outputFormat": "ISO8601",
+                                    "input": {
+                                        "type": "dateMath",
+                                        "attributes": {
+                                            "expression": "now+10y"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "secondDate": {
+                    "type": "dateMath",
+                    "attributes": {
+                        "expression": "now-2w",
+                        "roundUp": false
+                    }
+                },
+                "operator": "lt",
+                "positiveCondition": "true",
+                "negativeCondition": "false"
+            }
+        },
+        "overrideByFileNumber": {
+            "type": "replaceAll",
+            "attributes": {
+                "table": {
+                    "12345": "FOUND",
+                    "123456": "FOUND",
+                    "1234567": "FOUND",
+                    "default": "NOTFOUND"
+                },
+                "input": {
+                    "type": "accountAttribute",
+                    "attributes": {
+                        "attributeName": "filenumber",
+                        "sourceName": "Emp File"
+                    }
+                }
+            }
+        },
+        "value": "#if($overrideByFileNumber == 'FOUND')active#elseif($neverseenonempfile == 'never')inactive#elseif($empFileLastSeen-2w =='true')suspended#elseif($userid != 'NONE' && $oldLCS == 'manualSuspension')manualSuspension#elseif($userid != 'NONE' && $workerstatus != 'ACTIVE' && $movetoinactive-60d == 'true')inactive#elseif($userid != 'NONE' && $oldLCS == 'manualuspension' && $movetosuspended-2w == 'true')suspended#elseif($userid != 'NONE' && ($workerstatus == 'SUSPENDED' || $workerstatus == 'DISABLED' || $workerstatus == 'INACTIVE'))suspended#elseif($userid != 'NONE' && $workerstatus == 'ACTIVE')active#elseif($userid == 'NONE')newhire#{else}unmanaged#end"
+    },
+    "internal": false
+}
