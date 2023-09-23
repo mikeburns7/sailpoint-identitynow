@@ -1,0 +1,10 @@
+^((?:(?!smtp:).)*smtp:)|smtp:|@(.*?)(smtp:+?)|(@.*)|^(?!smtp:).*
+machtes everything except for string between smtp: and @
+example input : thisismyrandomtextsmtp:mike.burns@yahoo.commorerandromsmtp:dude.burns@yahgoo.com
+does not match: mike.burns and dude.burns
+
+
+^((?:(?!smtp:).)*smtp:)|smtp:|(?<=@)(.*?)(smtp:+?)|((?<=@).*)|^(?!smtp:).*
+machtes everything except for string between smtp: and @, but does not match trail @
+example input : thisismyrandomtextsmtp:mike.burns@yahoo.commorerandromsmtp:dude.burns@yahgoo.com
+does not match: mike.burns@ and dude.burns@
