@@ -1,0 +1,60 @@
+{
+	"name": "Joiner - Azure AD authorizationInfo Updater",
+	"description": "123",
+	"modified": "2023-12-06T20:38:44.595610579Z",
+	"modifiedBy": {
+		"type": "IDENTITY",
+		"id": "123",
+		"name": "Mike Burns"
+	},
+	"definition": {
+		"start": "Get Identity",
+		"steps": {
+			"Get Identity": {
+				"actionId": "sp:get-identity",
+				"attributes": {
+					"id.$": "$.trigger.recipient.id"
+				},
+				"nextStep": "HTTP Request",
+				"type": "action",
+				"versionNumber": 2
+			},
+			"HTTP Request": {
+				"actionId": "sp:http",
+				"attributes": {
+					"authenticationType": "OAuth",
+					"basicAuthPassword": "$.secrets.410f7753-ed38-4744-86df-098c5053b77d",
+					"basicAuthUserName": "",
+					"jsonRequestBody": "{\"source\":\"{{$.trigger.accountRequests[?(@.accountOperation=='Create')].source.id}}\",\"upn\":{{$.trigger.accountRequests[?(@.accountOperation=='Create')].attributeRequests[?(@.attributeName=='userPrincipalName')].attributeValue}},\"authz\":\"{{$.getIdentity.attributes.googleEmail}}\"}",
+					"method": "post",
+					"oAuthClientId": "123",
+					"oAuthClientSecret": "$.secrets.123",
+					"oAuthCredentialLocation": "oAuthInBody",
+					"oAuthScope": "api://123/.default",
+					"oAuthTokenUrl": "https://login.microsoftonline.com/123/oauth2/v2.0/token",
+					"requestContentType": "json",
+					"url": "https://123.azurewebsites.net/api/httptrigger1"
+				},
+				"description": "",
+				"nextStep": "success 1",
+				"type": "action",
+				"versionNumber": 2
+			},
+			"success 1": {
+				"type": "success"
+			}
+		}
+	},
+	"creator": {
+		"type": "IDENTITY",
+		"id": "123",
+		"name": "Mike Burns"
+	},
+	"trigger": {
+		"type": "EVENT",
+		"attributes": {
+			"filter.$": "$.accountRequests[?((@.source.id == '123' || @.source.id == '123' || @.source.id == '123') && @.accountOperation == 'Create' && @.provisioningResult == \"committed\")]",
+			"id": "idn:post-provisioning"
+		}
+	}
+}
